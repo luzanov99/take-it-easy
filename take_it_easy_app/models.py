@@ -4,11 +4,27 @@ from flask_sqlalchemy import SQLAlchemy
 # TODO add helper table to represent Many-to-many (Task-Tag):
 # https://flask-sqlalchemy.palletsprojects.com/en/2.x/models/?highlight=lazy#many-to-many-relationships
 # TODO add uselist attr to model to represent One-to-one:
-# (Task-Status, Comment-User)
+# (Task-Status, Comment-User -- is 1-1?)
 # TODO set delete behavior
 # TODO optional: set lengths of string fields if sqlite3 allows it
 
 db = SQLAlchemy()
+
+tags = db.Table(
+    'tags',
+    db.Column(
+        'tag_id',
+        db.Integer,
+        db.ForeignKey('tag.id'),
+        primary_key=True
+        ),
+    db.Column(
+        'task_id',
+        db.Integer,
+        db.ForeignKey('task.id'),
+        primary_key=True
+        )
+    )
 
 
 class User(db.Model):
@@ -58,11 +74,6 @@ class Permission(db.Model):
     # do we need action_granted here?
     action_granted = db.Column(db.String, unique=True, nullable=False)
 
-    project = db.relationship(
-        'Project',
-        backref=db.backref('permission'),
-        lazy=True
-        )
     project_id = db.Column(
         db.Integer,
         db.ForeignKey('project.id'),
@@ -81,6 +92,11 @@ class Project(db.Model):
     description = db.Column(db.String, nullable=True)
     status = db.Column(db.String, nullable=False)
 
+    project = db.relationship(
+        'Project',
+        backref=db.backref('permission'),
+        lazy=True
+    )
     tasks = db.relationship('Task', backref='project', lazy=True)
 
     def __repr__(self):
@@ -93,8 +109,8 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=True)
-    created_at = db.Column(db.Datetime, nullable=False)
-    due_date = db.Column(db.Datetime, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False)
+    due_date = db.Column(db.DateTime, nullable=True)
 
     project_id = db.Column(
         db.Integer,
@@ -114,10 +130,18 @@ class Task(db.Model):
     status = db.relationship(
         'Status',
         backref=db.backref('task'),
-        lazy=True
+        lazy=True,
+        uselist=False
         )
     tags = db.relationship(
-        'Tag', backref=db.backref('task'),
+        'Tag',
+        secondary=tags,
+        lazy='subquery',
+        backref=db.backref('task', lazy=True)
+        )
+    comments = db.relationship(
+        'Comment',
+        backref=db.backref('task'),
         lazy=True
         )
 
@@ -127,16 +151,11 @@ class Task(db.Model):
 
 class Tag(db.Model):
     __tablename__ = 'tags'
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     color = db.Column(db.String, nullable=True)
-
-    task_id = db.Column(
-        db.Integer,
-        db.ForeignKey('task.id'),
-        nullable=False
-        )
 
     def __repr__(self):
         return f'<Tag {self.name}>'
@@ -163,7 +182,7 @@ class Comment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     text = db.Column(db.String, nullable=False)
-    published_at = db.Column(db.Datetime, nullable=False)
+    published_at = db.Column(db.DateTime, nullable=False)
     attachments = db.relationship(
         'Attachment',
         backref='comment',
@@ -198,3 +217,7 @@ class Attachment(db.Model):
 
     def __repr__(self):
         return f'<Attachment {self.file_url}>'
+
+
+user_1 = User(username='test', password='test')
+print(user_1)
