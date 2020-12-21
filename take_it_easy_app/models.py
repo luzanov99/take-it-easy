@@ -4,10 +4,12 @@ from flask_sqlalchemy import SQLAlchemy
 # Add Model Task Status
 # Add relationship (User-Task)
 db = SQLAlchemy()
-
+tags = db.Table('tags',
+    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
+    db.Column('page_id', db.Integer, db.ForeignKey('task.id'))
+)
 
 class User(db.Model):
-    __tablename__ = 'users'
     id = db.Column(
         db.Integer,
         primary_key=True)
@@ -20,51 +22,50 @@ class User(db.Model):
     userpic_url = db.Column(
         db.String(),
         nullable=True)
-    adress=db.Column(db.String, db.ForeignKey('tasks.id'))
-    comment=db.relationship('Comments', backref=db.backref('users'), lazy=True)
+    adress = db.Column(db.String, db.ForeignKey('task.id'))
+    comment = db.relationship('Comment', backref=db.backref('user'), lazy=True)
     def __repr__(self):
         return f'<User {self.username}>'
 
 
-
 class Task(db.Model):
-    
-    __tablename__ = 'tasks'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=True)
     due_date = db.Column(db.DateTime, nullable=True)
-    status = db.relationship('Status', backref=db.backref('tasks'), lazy=True)
-    author= db.relationship('User', backref=db.backref('tasks'), lazy=True)
-    comment=db.relationship('Comments', backref=db.backref('tasks'), lazy=True)
-    executor=db.relationship('User',  lazy=True)
+    status = db.Column(db.Integer, db.ForeignKey('status.id'))
+    author = db.Column(db.Integer, db.ForeignKey('user.id'))
+    executor = db.relationship('User',  backref=db.backref('task') ,lazy=True)
+    tag = db.relationship('Tag', secondary=tags, backref=db.backref('task_tag'), lazy=True)
     def __repr__(self):
         return f'<Task {self.title} >'
 
 
 class Status(db.Model):
-    __tablename__ = 'statuses'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    task = db.Column(db.String, db.ForeignKey('tasks.title'))
+    task = db.Column(db.Integer, db.ForeignKey('task.id'))
+
     def __repr__(self):
         return f'<Status {self.name}>'
 
-class Comments(db.Model):
-    __tablename__ = 'comments'
+
+class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    text=db.Column(db.Text, nullable=False)
-    date=db.Column(db.DateTime, nullable=False)
-    attach=db.Column(db.LargeBinary, nullable=True)
-    task =db.Column(db.String, db.ForeignKey('tasks.title'))
-    author=db.Column(db.String, db.ForeignKey('users.username'))
+    text = db.Column(db.Text, nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    attach = db.Column(db.LargeBinary, nullable=True)
+    task = db.Column(db.Integer, db.ForeignKey('task.id'))
+    author = db.Column(db.Integer, db.ForeignKey('user.id'))
+
     def __repr__(self):
         return f'<Status {self.text}>'
 
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    task = db.relationship('Task', backref=db.backref('project') ,lazy=True)
 
-#py = Status(name='Python')
-#p = Task(title='Snakes', description='Ssssssss', due_date='12.10.2020',status=[py])
-#print(p.due_date)
-
-
-
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
