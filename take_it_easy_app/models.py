@@ -33,9 +33,16 @@ class Task(db.Model):
     title = db.Column(db.String, nullable=False)
     description = db.Column(db.String, nullable=True)
     due_date = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.Integer, db.ForeignKey('status.id'))
     author = db.Column(db.Integer, db.ForeignKey('user.id'))
-    executor = db.relationship('User',  backref=db.backref('task') ,lazy=True)
+    executor = db.Column(db.Integer, db.ForeignKey('user.id'))
+    task_author = db.relationship(
+        'User',
+        foreign_keys=[author])
+    task_executor = db.relationship(
+        'User',
+        foreign_keys=[executor])
+    project = db.Column(db.Integer, db.ForeignKey('project.id'))
+    status = db.Column(db.Integer, db.ForeignKey('status.id'))
     tag = db.relationship('Tag', secondary=tags, backref=db.backref('task_tag'), lazy=True)
     def __repr__(self):
         return f'<Task {self.title} >'
@@ -64,7 +71,7 @@ class Comment(db.Model):
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
-    task = db.relationship('Task', backref=db.backref('project') ,lazy=True)
+    tasks = db.Column(db.Integer, db.ForeignKey('task.id'))
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
