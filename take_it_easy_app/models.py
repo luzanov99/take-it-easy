@@ -66,7 +66,7 @@ class Comment(db.Model):
     author = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __repr__(self):
-        return f'<Status {self.text}>'
+        return f'<Comment {self.text}>'
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
