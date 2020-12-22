@@ -1,8 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 
-# TODO set delete behavior
-# Add Model Task Status
-# Add relationship (User-Task)
+
 db = SQLAlchemy()
 tags = db.Table('tags',
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id')),
