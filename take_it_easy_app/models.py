@@ -16,7 +16,6 @@ class User(db.Model):
     )
     password = db.Column(db.String(128), nullable=False)
     userpic_url = db.Column(db.String(), nullable=True)
-    adress = db.Column(db.String, db.ForeignKey("task.id"))
     comment = db.relationship("Comment", backref=db.backref("user"), lazy=True)
 
     def __repr__(self):
@@ -68,7 +67,13 @@ class Project(db.Model):
     name = db.Column(db.String, nullable=False)
     tasks = db.Column(db.Integer, db.ForeignKey("task.id"))
 
+    def __repr__(self):
+        return f"<Project {self.name}>"
+
 
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
+
+    def __repr__(self):
+        return f"<Tag {self.name}>"
