@@ -4,8 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 tags = db.Table(
     "tags",
-    db.Column("tag_id", db.Integer, db.ForeignKey("tag.id")),
-    db.Column("page_id", db.Integer, db.ForeignKey("task.id")),
+    db.Column(
+        "tag_id", db.Integer, db.ForeignKey("tag.id"), primary_key=True),
+    db.Column(
+        "page_id", db.Integer, db.ForeignKey("task.id"), primary_key=True),
 )
 
 
