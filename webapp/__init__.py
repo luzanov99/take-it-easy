@@ -1,7 +1,7 @@
 from flask import Flask, render_template, flash, redirect, url_for
 from flask_login import LoginManager,current_user, login_required, login_user, logout_user
 from webapp.forms import LoginForm
-from webapp.models import db, User
+from webapp.models import db, User, Project
 
 def create_app():
     app = Flask(__name__)
@@ -16,7 +16,9 @@ def create_app():
 
     @app.route("/")
     def index():
-        return  "Главная страница"
+        title='Задачи'
+        projects_list=Project.query.all()
+        return  render_template('index.html', page_title=title, projects_list=projects_list)
 
     @app.route('/login')
     def login():
