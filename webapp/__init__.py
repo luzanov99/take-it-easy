@@ -16,7 +16,7 @@ def create_app():
 
     @app.route("/")
     def index():
-        title='Задачи'
+        title='Проекты'
         projects_list=Project.query.all()
         return  render_template('index.html', page_title=title, projects_list=projects_list)
 
